@@ -38,12 +38,13 @@ services:
       context: ./OnlineQuizzApi
       dockerfile: Presentation/Dockerfile
     ports:
-      - "8001:8080"
+      - "8001:8080"  # Только HTTP порт
     environment:
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080  # Только HTTP
       - ConnectionStrings__DefaultConnection=Host=quiz-db;Port=5432;Database=OnlineQuizApi;Username=postgres;Password=1111
       - RabbitMQ__Host=quiz-rabbitmq
-      - RabbitMQ__Port=5673
+      - RabbitMQ__Port=5672  # Исправлен порт
     depends_on:
       quiz-db:
         condition: service_started
@@ -58,18 +59,19 @@ services:
       context: ./OnlineQuizScoreService
       dockerfile: Presentation/Dockerfile
     ports:
-      - "8002:8080"
+      - "8002:8080"  # Только HTTP порт
     environment:
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080  # Только HTTP
       - ConnectionStrings__DefaultConnection=Host=quiz-db;Port=5432;Database=OnlineQuizApi;Username=postgres;Password=1111
-#      - RabbitMQ__Host=quiz-rabbitmq
-#      - RabbitMQ__Port=5673
+      - RabbitMQ__Host=quiz-rabbitmq
+      - RabbitMQ__Port=5672  # Исправлен порт
       - ServiceUrls__QuizManagerApi=http://quiz-manager-api:8080
     depends_on:
       quiz-db:
         condition: service_started
-#      quiz-rabbitmq:
-#        condition: service_healthy
+      quiz-rabbitmq:
+        condition: service_healthy
       quiz-manager-api:
         condition: service_started
     networks:
@@ -83,9 +85,8 @@ services:
     ports:
       - "7000:8080"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ServiceUrls__QuizManagerApi=http://quiz-manager-api:8080
-      - ServiceUrls__ScoringServiceApi=http://scoring-service-api:8080
     depends_on:
       quiz-manager-api:
         condition: service_started
