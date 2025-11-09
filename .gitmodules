@@ -1,0 +1,6 @@
+[submodule "OnlineQuizApi"]
+	path = OnlineQuizApi
+	url = https://github.com/Muradxanyann/OnlineQuizApi
+[submodule "OnlineQuizScoreService"]
+	path = OnlineQuizScoreService
+	url = https://github.com/Muradxanyann/OnlineQuizScoreService
