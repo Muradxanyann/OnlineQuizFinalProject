@@ -1,0 +1,103 @@
+services:
+  quiz-db:
+    image: postgres:16-alpine
+    container_name: quiz-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+      POSTGRES_DB: OnlineQuizApi
+    ports:
+      - "5433:5432"
+    volumes:
+      - quiz-db-data:/var/lib/postgresql/data
+    networks:
+      - quiz-net
+    restart: unless-stopped
+
+  quiz-rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: quiz-rabbitmq
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+      start_period: 40s
+    networks:
+      - quiz-net
+    restart: unless-stopped
+
+  quiz-manager-api:
+    build:
+      context: ./OnlineQuizzApi
+      dockerfile: Presentation/Dockerfile
+    ports:
+      - "8001:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=quiz-db;Port=5432;Database=OnlineQuizApi;Username=postgres;Password=1111
+      - RabbitMQ__Host=quiz-rabbitmq
+      - RabbitMQ__Port=5673
+    depends_on:
+      quiz-db:
+        condition: service_started
+      quiz-rabbitmq:
+        condition: service_healthy
+    networks:
+      - quiz-net
+    restart: unless-stopped
+
+  scoring-service-api:
+    build:
+      context: ./OnlineQuizScoreService
+      dockerfile: Presentation/Dockerfile
+    ports:
+      - "8002:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=quiz-db;Port=5432;Database=OnlineQuizApi;Username=postgres;Password=1111
+#      - RabbitMQ__Host=quiz-rabbitmq
+#      - RabbitMQ__Port=5673
+      - ServiceUrls__QuizManagerApi=http://quiz-manager-api:8080
+    depends_on:
+      quiz-db:
+        condition: service_started
+#      quiz-rabbitmq:
+#        condition: service_healthy
+      quiz-manager-api:
+        condition: service_started
+    networks:
+      - quiz-net
+    restart: unless-stopped
+
+  quiz-api-gateway:
+    build:
+      context: ./OnlinQuizAPI.Gateway/OnlineQuizAPI.Gateway
+      dockerfile: Dockerfile
+    ports:
+      - "7000:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ServiceUrls__QuizManagerApi=http://quiz-manager-api:8080
+      - ServiceUrls__ScoringServiceApi=http://scoring-service-api:8080
+    depends_on:
+      quiz-manager-api:
+        condition: service_started
+      scoring-service-api:
+        condition: service_started
+    networks:
+      - quiz-net
+    restart: unless-stopped
+
+networks:
+  quiz-net:
+    driver: bridge
+
+volumes:
+  quiz-db-data:
