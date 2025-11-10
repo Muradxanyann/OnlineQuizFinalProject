@@ -96,7 +96,7 @@ OnlineQuizPlatform/
 - API Gateway: http://localhost:7000/swagger
 - Quiz Management API: http://localhost:8001/swagger
 - Scoring Service API: http://localhost:8002/swagger
-- RabbitMQ Management: http://localhost:15672 (guest/guest)
+- RabbitMQ Management: http://localhost:15673 (guest/guest)
 - PostgreSQL: localhost:5433
 
 ### 🐳 Docker Services

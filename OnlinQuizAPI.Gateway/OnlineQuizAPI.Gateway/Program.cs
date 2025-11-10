@@ -7,21 +7,27 @@ using MMLib.SwaggerForOcelot;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Конфигурация
-builder.Configuration
-    .AddJsonFile("configuration.json", optional: false, reloadOnChange: true)
-    .AddJsonFile("ocelot.swagger.json", optional: true, reloadOnChange: true);
-
-// Убрали стандартный Swagger Gen - используем только SwaggerForOcelot
+// Downloading configuration Ocelot from file configuration.json
+builder.Configuration.AddJsonFile("configuration.json", optional: false, reloadOnChange: true);
 builder.Services.AddOcelot(builder.Configuration);
+
+// Adding swagger support for for Ocelot
+// This library collects all configs from all services, and swagger UI become shared 
 builder.Services.AddSwaggerForOcelot(builder.Configuration);
+
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
 
 var app = builder.Build();
 
-// Настройка Swagger для Ocelot
-app.UseSwaggerForOcelotUI(opt =>
-{
+app.UseSwagger();
+app.UseSwaggerForOcelotUI(opt => {
     opt.PathToSwaggerGenerator = "/swagger/docs";
 }).UseOcelot().Wait();
+
+
+app.MapControllers();
 
 app.Run();

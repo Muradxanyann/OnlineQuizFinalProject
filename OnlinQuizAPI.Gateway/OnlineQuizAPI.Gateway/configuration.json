@@ -4,10 +4,7 @@
       "DownstreamPathTemplate": "/api/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        {
-          "Host": "quiz-manager-api",
-          "Port": 8080
-        }
+        { "Host": "quiz-manager-api", "Port": 8080 }
       ],
       "UpstreamPathTemplate": "/api/quiz/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
@@ -16,16 +13,35 @@
       "DownstreamPathTemplate": "/api/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        {
-          "Host": "scoring-service-api",
-          "Port": 8080
-        }
+        { "Host": "scoring-service-api", "Port": 8080 }
       ],
       "UpstreamPathTemplate": "/api/scoring/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://quiz-api-gateway:8080"
-  }
+    "BaseUrl": "http://localhost:7000"
+  },
+  "SwaggerEndPoints": [
+    {
+      "Key": "quiz-svc",
+      "Config": [
+        {
+          "Name": "Quiz Management API",
+          "Version": "v1",
+          "Url": "http://quiz-manager-api:8080/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "scoring-svc",
+      "Config": [
+        {
+          "Name": "Scoring API",
+          "Version": "v1",
+          "Url": "http://scoring-service-api:8080/swagger/v1/swagger.json"
+        }
+      ]
+    }
+  ]
 }
